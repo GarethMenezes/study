@@ -1,7 +1,13 @@
 
+## Resource Upload
 ### Client
-The JS would load what the user has inputted via a popup form on the site. This is parsed and sent by the JS to the worker with json POST request, for instance:
+1) The user inputs data via a popup form on the site.
 
+2) JS processes the input, converting it into a JSON payload.
+
+3) The JSON is sent to the worker using an HTTP POST request.
+
+#### Request Schema
 ```json
 {
     "fileData": {
@@ -11,17 +17,25 @@ The JS would load what the user has inputted via a popup form on the site. This 
             "gwdfkbkrgbwi3tyw3rwe=",
             "niu34y7895f98374nf="
             ],
+        "type": "exam_script",
         "tier": "alevel",
         "subject": "english_lang_lit",
-        "should_hide_name": true
+        "grade": "a*",
+        "marks": 98,
+        "exam_board": "aqa",
+        "should_hide_name": true,
+        "should_watermark": true,
+        "should_allow_indexing": true,
+        "should_allow_ai_training": false,
+        "should_report_analytics": false,
+        "should_monetise", true,
     }
 }
 ```
 
 
-The server would validate this:
-
 ### Worker code
+The server would validate this:
 - If auth token/cookie is not valid, return error
 - Sanitise everything (!!!)
 - Parse the name and other fields
