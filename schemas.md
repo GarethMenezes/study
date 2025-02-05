@@ -28,7 +28,7 @@
         "should_allow_indexing": true,
         "should_allow_ai_training": false,
         "should_report_analytics": false,
-        "should_monetise", true,
+        "should_monetise": true,
     }
 }
 ```
