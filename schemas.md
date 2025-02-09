@@ -1,6 +1,31 @@
 # iBaguette Study -- Schemas
 This document outlines the schemas for study.iBaguette.com, a platform for students to share and access educational resources.
 
+## User Data
+User data is to be migrated from the existing Draggie Games database. It holds the following fields:
+| Field      | Description                                                                          | Data type | Optional | Possible values |
+|------------|--------------------------------------------------------------------------------------|-----------|----------|-----------------|
+| id         | The unique identifier for the user, starting from 1.                                 | int       | false    | any             |
+| email      | The email address of the user.                                                       | string    | false    | any             |
+| password   | The sha256 + salted password of the user (pbkdf2 or scrypt).                         | string    | false    | any             |
+| username   | User's unique username.                                                              | string    | false    | any             |
+| codes      | Array of games codes the user has redeemed as strings.                               | array     | true     | any             |
+| tokens     | Array of authentication tokens the user has generated, as strings.                   | array     | true     | any             |
+| tokens_expiration | Array of ints representing the expiration time of each corresponding token in `tokens`. | array | true | any |
+| status     | The status of the user's account. (Unused)                                                   | string    | false    | active, banned |       
+| verified   | Whether the user has verified their email address.                                    | bool      | false    | true, false     |
+| verified_date | The unix timestamp of when the user verified their email.                           | float     | true     | any             |
+| temp_account_reset_token | If the user has requested a password reset, this token is used to verify the request. | string/null | true | any string or null |
+| entitlements | Array of entitlements the user has, as strings.                                       | array     | true     | any             |
+| verification_pending | Whether the user clicked on verificaiton link in email.                               | bool      | false    | true, false     |
+| verification_pending_codes | Unique uuid of the verification code sent to the user.                                | string    | true    | any             |
+| user_lang  | The language the user has set for the site.                                           | string    | true     | en, fr, shakespeare, pirate, pseudo, ie, lolcat |
+| last_time_reset_token | The unix timestamp of when the user last requested a password reset as a string (to be migrated to a float).    | string    | true     | any             |
+| last_activity | The unix timestamp of the user's last activity from any endpoint.                    | float     | true     | any             |
+
+### Generic User Schema
+
+
 ## Resource Upload
 ### Client
 1) The user inputs data via a popup form on the site.
