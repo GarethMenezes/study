@@ -61,6 +61,8 @@ User data is to be migrated from the existing Draggie Games database. It holds t
         "subject": "english_lang_lit",
         "exam_board": "aqa",
 
+        "has_agreed_to_tos": true,
+
         // Optional bool fields - use default values if not present
         "should_hide_name": true,
         "should_watermark": true,
@@ -80,12 +82,13 @@ User data is to be migrated from the existing Draggie Games database. It holds t
 | files.name | The name, as defined on the client's device, of the file                             | string    | false              | any             |
 | files.data | The base64 encoded file data                                                         | string    | false              | any             |
 | files.description | The user's description of the file                                              | string    | false              | any             |
-| files.resource_type | The type of resource being uploaded                                           | string    | false              | exam_script, nea, personal_statement, notes, other |
-| files.grade      | The grade obtained by the user                                                      | string    | true               | A*-U, 9-1 |
+| files.resource_type | The type of resource being uploaded                                           | string    | false              | "exam_script", "nea", "personal_statement", "notes"; other |
+| files.grade      | The grade obtained by the user                                                      | string    | true               | "A*"-"U", "9"-"1" |
 | files.marks      | The marks obtained for the resource                                                   | int       | true               | any             |
-| tier       | The target level of education for that resource                                      | string    | false              | uni, alevel, gcse, ib, other (e.g. if personal statement) |
-| subject    | The subject of the resource                                                         | string    | false              | All possible subjects |
-| exam_board | The exam board the resource was made for                                             | string    | false              | OCR, AQA, Edexcel, CIE, WJEC, other |
+| tier       | The target level of education for that resource                                      | string    | false              | "uni", "alevel", "gcse", "ib"; other (e.g. if personal statement) |
+| subject    | The subject of the resource                                                         | string    | false              | (all possible subjects) |
+| exam_board | The exam board the resource was made for                                             | string    | false              | "OCR", "AQA", "Edexcel", "CIE", "WJEC"; other |
+| has_agreed_to_tos | Whether the user has agreed to the terms of service. **Must be true.**                                 | bool      | false              | true (**mandatory**), false |
 | should_hide_name | Whether the user wants to dissociate their name from the resource                | bool      | true              | true, false (default) |
 | should_watermark | If the user wants to add a watermark to their resource                            | bool      | true              | true, false (default) |
 | should_allow_indexing | If the user wants the resource to be indexed by search engines                  | bool      | true              | true (default), false |
