@@ -13,7 +13,6 @@ In order to do this, the system will be split into three sections:
 
 The database will consist of several tables to organise data, one table may not work independantly.
 - feedback
-- files
 - uploads
 - user-tokens
 - users
@@ -23,7 +22,7 @@ The database will consist of several tables to organise data, one table may not 
 
 ### feedback
 
-This table will store user feedback for the site and could also act as an error log to store console information.
+This table will store user feedback for the site and could also act as an error log to store console information. Field `content` will likely be in json to store multiple details.
 
 | Column Name            | Data Type | Constraints                                      |
 |------------------------|----------|--------------------------------------------------|
@@ -32,20 +31,10 @@ This table will store user feedback for the site and could also act as an error 
 | `submittion-datetime` | INTEGER  | -                                               |
 | `content`            | TEXT     | NOT NULL                                        |
 
-### files
-
-This table will store individual files from an upload. A user may upload a single file, but in order to stay under cloudflare limitations the file can be split into several parts that can be stored seperately. These individual files will be recorded here.
-
-| Column Name  | Data Type | Constraints                                      |
-|-------------|----------|--------------------------------------------------|
-| `file-id`   | INTEGER  | NOT NULL, UNIQUE, PRIMARY KEY (AUTOINCREMENT)   |
-| `upload-id` | INTEGER  | NOT NULL, FOREIGN KEY REFERENCES `uploads`(`upload-id`) |
-| `path`      | TEXT     | NOT NULL                                        |
-| `data`      | TEXT     | -                                               |
-
 ### uploads
 
 This table will store uploads. When the user uploads a file they should complete a form to populate majority of these fields.
+If the user uploads a file that is too large and needs to be "chunked" the client side should split the file into chunks that are then re-assembled on the R2. This keeps the upload with a single file and ensures it is under cloudflares restrictions.
 
 | Column Name        | Data Type | Constraints                                      |
 |--------------------|----------|--------------------------------------------------|
@@ -69,6 +58,9 @@ This table will store uploads. When the user uploads a file they should complete
 | `subject`        | TEXT     | -                                               |
 | `exam-board`     | TEXT     | -                                               |
 | `resource-type`  | TEXT     | -                                               |
+| `path`      | TEXT     | NOT NULL                                        |
+| `data`      | TEXT     | -                                               |
+
 
 ### user-tokens
 
