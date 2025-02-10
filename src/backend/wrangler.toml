@@ -11,12 +11,12 @@ binding = 'resources_bucket'
 bucket_name = 'study-storage'
 
 [[d1_databases]]
-binding = "resources_db"
-
-# Testing d1_database
-database_name = "resources-db-test"
-database_id = ""
+# Dev branch  
+binding = "DEV_resources_db"
+database_name = "resources-db-DEV"
+database_id = "a0fde410-1351-41e3-b746-e724e48ea2ac"
 
 # Production d1_database
-## database_name = "resources-db"
-## database_id = "3d9ef277-18ee-4b6c-9266-b8cef6d2ea35"
+# binding = "resources_db"
+# database_name = "resources-db"
+# database_id = "3d9ef277-18ee-4b6c-9266-b8cef6d2ea35"

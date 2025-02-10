@@ -30,6 +30,7 @@ export default {
 // General function to handle API requests, splits into corresponding function
 async function handle_request(request: any, env: any, ctx: any) {
 
+    console.log("Request received: " + request.method + " " + request.url + " with context: " + JSON.stringify(ctx));
     // Parse the endpoint
     const url = new URL(request.url);
     const pathname = url.pathname;
@@ -39,6 +40,9 @@ async function handle_request(request: any, env: any, ctx: any) {
         return handle_options(request);
     } else if (request.method == "GET") {
         return await handle_get(request, env, ctx, pathname);
+    } else if (request.method == "POST") {
+        // Post method is used for e.g. uploading files
+        return;
     }
     
     // Otherwise, site is not found
@@ -51,11 +55,11 @@ function handle_options(request: any) {
     return new Response(null, {
         status: 204,
         headers: {
-            "Access-Control-Allow-Methods": "GET, OPTIONS"
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Origin": "*",
             // TODO: MUST ADD OTHER OPTIONS HERE
         }
     })
-
 }
 
 
@@ -72,6 +76,10 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
         // Returnt the search method
         return await search(request, env, ctx);
     } else if (pathname.startsWith('/upload')) {
+        if (request.method != "POST") {
+            return new Response("Method not allowed! Follow the iBaguette Study schema and API documentation for uploading resources.", { status: 405 });
+        }
+
         // If GET and /upload, then return something important e.g token, only upload if correct method...
         return await upload(request, env, ctx);
     }
@@ -81,6 +89,9 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
 
 
 async function upload(request: any, env: any, ctx: any) {
+    if (request.method != "POST") {
+        return new Response("Method not allowed! Follow the iBaguette Study schema and API documentation for uploading resources.", { status: 405 });
+    }
     return new Response("todo: add the upload functionality here", { status: 501 });
 
     // look for token/auth in request headers. early return 401 if not found
@@ -110,4 +121,3 @@ async function search(request: any, env: any, ctx: any) {
     // return the results in a lovely json format and success of 200 :))
 
 }
-
