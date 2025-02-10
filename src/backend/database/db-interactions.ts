@@ -2,7 +2,7 @@ export default class Interactions {
     db: any;
 
     constructor(env) {
-        this.db = env.resources_db; // Get the D1 binding 
+        this.db = env.DEV_resources_db; // Get the D1 binding 
     }
 
     // Function to get all of the tables in the schema
