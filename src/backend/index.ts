@@ -19,40 +19,68 @@ import dbAPI from "./database/dbapi";
  */
 
 
+// Setup worker to receive requests
 export default {
     async fetch(request: any, env: any, ctx: any) {
-        // // Create an API instance
-        // const db = new dbAPI(env);
-                
-        // // Initialise the database if it hasnt been already
-        // db.initialiseDatabase();
-
-        // Parse the endpoint
-        const url = new URL(request.url);
-        const pathname = url.pathname;
-
-        // Check the endpoint
-        if (pathname.startsWith('/search')) {
-            return search(request, env, ctx);
-        } else if (pathname.startsWith("/upload")) {
-            return handle_upload(request, env, ctx);
-        }
-
-        return new Response("Not Found", { status: 404 });
-
-        /** D1 Integration Info
-         * 
-         * D1 database is 'env.DB', where "DB" is the binding name from the `wrangler.toml / wrangler.json` file. (in this case, `resources_db`)
-         * const someVariable = `Bs Beverages`;
-         * const stmt = env.DB.prepare("SELECT * FROM Customers WHERE CompanyName = ?").bind(someVariable);
-         * 
-         * 
-         */
-
-    },
+        return await handle_request(request, env, ctx);
+    }
 };
 
-async function handle_upload(request: any, env: any, ctx: any) {
+
+// General function to handle API requests, splits into corresponding function
+async function handle_request(request: any, env: any, ctx: any) {
+
+    // Parse the endpoint
+    const url = new URL(request.url);
+    const pathname = url.pathname;
+
+    // Check the endpoint method, call the corresponding function
+    if (request.method == "OPTIONS") {
+        return handle_options(request);
+    } else if (request.method == "GET") {
+        return await handle_get(request, env, ctx, pathname);
+    }
+    
+    // Otherwise, site is not found
+    return new Response("Not Found", { status: 404 });
+}
+
+
+// Function to handle connections with OPTIONS method
+function handle_options(request: any) {
+    return new Response(null, {
+        status: 204,
+        headers: {
+            "Access-Control-Allow-Methods": "GET, OPTIONS"
+            // TODO: MUST ADD OTHER OPTIONS HERE
+        }
+    })
+
+}
+
+
+// Function to handle connections with GET method
+async function handle_get(request: any, env: any, ctx:any, pathname: string) {
+    // Create an API instance
+    const db = new dbAPI(env);
+
+    // Determine what to GET
+    if (pathname.startsWith('/tables')) { // TEMPORARY, REMOVE WHEN DEPLOYING
+        const tables = await db.initialiseDatabase();
+        return new Response("Tables Found: " + tables, { status: 200 });
+    } else if (pathname.startsWith('/search')) {
+        // Returnt the search method
+        return await search(request, env, ctx);
+    } else if (pathname.startsWith('/upload')) {
+        // If GET and /upload, then return something important e.g token, only upload if correct method...
+        return await upload(request, env, ctx);
+    }
+
+    return new Response("Not Found", { status: 404 });
+}
+
+
+async function upload(request: any, env: any, ctx: any) {
     return new Response("todo: add the upload functionality here", { status: 501 });
 
     // look for token/auth in request headers. early return 401 if not found
@@ -67,9 +95,9 @@ async function handle_upload(request: any, env: any, ctx: any) {
 
 }
 
-async function search(request: any, env: any, ctx: any) {
-    return new Response("We are searching", { status: 200 });
 
+async function search(request: any, env: any, ctx: any) {
+    return new Response("todo: add search functionality stuff here", { status: 501 });
     // TODO: add sql query to search for resources:
 
 
