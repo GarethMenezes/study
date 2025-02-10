@@ -57,6 +57,7 @@ function handle_options(request: any) {
         headers: {
             "Access-Control-Allow-Methods": "GET, OPTIONS",
             "Access-Control-Allow-Origin": "*",
+            
             // TODO: MUST ADD OTHER OPTIONS HERE
         }
     })

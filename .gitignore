@@ -6,3 +6,6 @@ package-lock.json
 .wrangler/
 cf.json
 wrangler-account.json
+
+# local dev
+.vscode*
