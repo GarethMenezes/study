@@ -19,6 +19,38 @@ import dbAPI from "./database/dbapi";
  */
 
 
+async function handle_upload(request: any, env: any, ctx: any) {
+    return new Response("todo: add the upload functionality here", { status: 501 });
+
+    // look for token/auth in request headers. early return 401 if not found
+
+    // parse the post body according to the schema
+
+    // sanitise and validate the data
+
+    // send data to database and then add to R2 bucket
+
+    // return success or error response
+
+}
+
+async function search(request: any, env: any, ctx: any) {
+    return new Response("We are searching", { status: 200 });
+
+    // TODO: add sql query to search for resources:
+
+
+    // parse the query string (this is a GET request) for what to search for
+
+    // validate and return early if invalid
+
+    // do the corresponding sql stuff and get the results
+
+    // return the results in a lovely json format and success of 200 :))
+
+}
+
+
 export default {
     async fetch(request: any, env: any, ctx: any) {
         // // Create an API instance
@@ -52,34 +84,4 @@ export default {
     },
 };
 
-async function handle_upload(request: any, env: any, ctx: any) {
-    return new Response("todo: add the upload functionality here", { status: 501 });
-
-    // look for token/auth in request headers. early return 401 if not found
-
-    // parse the post body according to the schema
-
-    // sanitise and validate the data
-
-    // send data to database and then add to R2 bucket
-
-    // return success or error response
-
-}
-
-async function search(request: any, env: any, ctx: any) {
-    return new Response("We are searching", { status: 200 });
-
-    // TODO: add sql query to search for resources:
-
-
-    // parse the query string (this is a GET request) for what to search for
-
-    // validate and return early if invalid
-
-    // do the corresponding sql stuff and get the results
-
-    // return the results in a lovely json format and success of 200 :))
-
-}
-
+// end 
