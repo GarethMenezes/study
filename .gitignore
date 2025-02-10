@@ -1,0 +1,8 @@
+# node
+/node_modules
+package-lock.json
+
+# src/backend cloudflare worker stuff
+.wrangler/
+cf.json
+wrangler-account.json
