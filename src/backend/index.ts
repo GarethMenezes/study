@@ -1,6 +1,5 @@
 import dbAPI from "./database/dbapi";
 
-
 /**
  *  Bindings:
  * - The D1 database name is 'resources-db'
@@ -22,13 +21,22 @@ import dbAPI from "./database/dbapi";
 
 export default {
     async fetch(request: any, env: any, ctx: any) {
-        // Create an API instance
-        const db = new dbAPI(env);
+        // // Create an API instance
+        // const db = new dbAPI(env);
                 
-        // Initialise the database if it hasnt been already
-        db.initialiseDatabase();
+        // // Initialise the database if it hasnt been already
+        // db.initialiseDatabase();
 
-        return new Response('Hello World!');
+        // Parse the endpoint
+        const url = new URL(request.url);
+        const pathname = url.pathname;
+
+        // Check the endpoint
+        if (pathname.startsWith('/search')) {
+            return search(request, env, ctx);
+        }
+
+        return new Response("Not Found", { status: 404 });
 
         /** D1 Integration Info
          * 
@@ -41,3 +49,8 @@ export default {
 
     },
 };
+
+async function search(request: any, env: any, ctx: any) {
+    return new Response("We are searching", { status: 200 });
+}
+
