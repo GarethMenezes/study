@@ -91,3 +91,18 @@ This table will store the users login information as well as account details.
 | `language`           | TEXT     | NOT NULL                                        |
 | `last-reset-datetime` | INTEGER  | -                                               |
 | `last-activity-datetime` | INTEGER | -                                               |
+
+## Database API Structure
+
+The API will be broken down into smaller importable modules to keep the system maintainable.
+The worker will import the database API, this will be a middleman between functions and SQL, it can then call specific SQL from different files. The worker should only interact with the API to maintain database integrity, it should not interact directly with the d1.
+
+- `worker.js` uses `database/dbapi.js`
+- `database/dbapi.js` uses `database/db-interactions.js` and other files to access the database.
+- `database/db-interactions.js` is responsible for executing SQL on behalf of the API. The API is resposible for maintaining database integrity.
+
+## Database API Documentation
+
+### initialiseDatabase()
+
+This function should be called on worker startup, it runs a script to re generate the schema without overwriting previous data.
