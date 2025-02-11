@@ -74,7 +74,7 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
         const data = await db.initialiseDatabase(env);
 
         // Check we are in DEVELOPMENT
-        if (data[1] == "NO ACCESS") {
+        if (data == false) {
             // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
             return new Response("Not Found", { status: 404 });
         }

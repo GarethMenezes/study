@@ -22,39 +22,43 @@ export default class dbAPI {
         // Get tokens
         const tokens = await this.controller.getTokensTable(env);
 
-        // Output the tokens found
-        message.push("\n Tokens:    ")
-        if (tokens != false) {
-            for (const result of tokens) {
-                message.push((result["user-id"]) as string);
-                message.push("-");
-                message.push(result.token);
-                message.push("-");
-                message.push((result["expiration-datetime"]) as string);
-                message.push("-");
-                message.push((result.type) as string);
-               message.push(", ");
-            }
-        } else {
-            message.push("NO ACCESS");
-        }
+        if (env.ENVIRONMENT_MODE == "development") {
+            // Append the datetime epoch for debugging
+            message.push("\n Current Epoch: ")
+            message.push(Math.floor(Date.now() / 1000) as unknown as string)
 
-        // Output the tables found
-        message.push("\n Tables:    ")
-        if (tables != false) {
-            for (const result of tables) {
-                message.push(result.name);
+            // Output the tokens found
+            message.push("\n Tokens:    ")
+            if (tokens != false) {
+                for (const result of tokens) {
+                    message.push((result["user-id"]) as string);
+                    message.push("-");
+                    message.push(result.token);
+                    message.push("-");
+                    message.push((result["expiration-datetime"]) as string);
+                    message.push("-");
+                    message.push((result.type) as string);
                 message.push(", ");
+                }
+            } else {
+                message.push("NO ACCESS OR NO DATA");
             }
+
+            // Output the tables found
+            message.push("\n Tables:    ")
+            if (tables != false) {
+                for (const result of tables) {
+                    message.push(result.name);
+                    message.push(", ");
+                }
+            } else {
+                message.push("NO ACCESS OR NO DATA");
+            }
+
+            return message;
         } else {
-            message.push("NO ACCESS");
+            return false;
         }
-
-        // Append the datetime epoch for debugging
-        message.push("\n Current Epoch: ")
-        message.push(Math.floor(Date.now() / 1000) as unknown as string)
-
-        return message;
     }
 
 

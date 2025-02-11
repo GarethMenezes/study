@@ -67,10 +67,10 @@ export default class Interactions {
             return false;
 
         // Is the token not expired?
-        if ((results.results[0].expiration as number) <= (Math.floor(Date.now() / 1000) as number))
+        if ((results.results[0]["expiration-datetime"] as number) <= (Math.floor(Date.now() / 1000) as number))
             // Token is expired
             // Delete the entry and return false
-            await this.db.prepare('DELETE FROM "user-tokens" WHERE "token" = ?;').run();
+            await this.db.prepare('DELETE FROM "user-tokens" WHERE "token" = ?;').bind(token).run();
             return false;
 
         // Otherwise the token is real and valid
