@@ -45,7 +45,7 @@ async function handle_request(request: any, env: any, ctx: any) {
     }
     
     // Otherwise, site is not found
-    return new Response("Not Found", { status: 404 });
+    return generate_api_response("Not Found", 404, true, "not_found");
 }
 
 
@@ -76,7 +76,7 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
         // Check we are in DEVELOPMENT
         if (data == false) {
             // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
-            return new Response("Not Found", { status: 404 });
+            return generate_api_response("Cannot access this site in production.", 403, true, "no_access");
         }
         
         // If we are, then prepare the data
@@ -92,11 +92,10 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
     } else if (pathname.startsWith('/search')) {
         // Return the search method
         return await search(request, env, ctx);
-
     }
 
     // Otherwise, No data found
-    return new Response("Not Found", { status: 404 });
+    return generate_api_response("Not Found", 404, true, "not_found");
 }
 
 
@@ -105,31 +104,28 @@ async function handle_post(request: any, env: any, ctx:any, pathname: string) {
     // Create an API instance
     const db = new dbAPI(env);
 
-    // Determine what to POST
+    // Evaluate and match the endpoint
     if (pathname.startsWith('/upload')) {
         return await upload(request, env, ctx);
-
     } else if (pathname.startsWith('/search')) {
-        // Returnt the search method
         return await search(request, env, ctx);
-
     }
 
-    // Otherwise, No data found
-    return new Response("Not Found", { status: 404 });
+    // For all other routes, it was unknown/unimplemented
+    return generate_api_response("Not Found", 404, true, "not_found");
 }
 
 
 async function upload(request: any, env: any, ctx: any) {
-    if (request.method != "POST") {
-        return new Response("Method not allowed! Follow the iBaguette Study schema and API documentation for uploading resources.", { status: 405 });
-    }
-
     const db = new dbAPI(env);
 
     // First validate the users token
+    if (!request.headers.has("Authorisation")) {
+        return generate_api_response("No authorisation token provided.", 401, true, "AUTH_MISSING");
+    };
+
     if (!(await db.validateToken(request.headers.get("Authorisation")))) {
-        return new Response("Token Not Authorised", { status: 401 });
+        return generate_api_response("Authentication is invalid, please sign in again.", 401, true, "AUTH_INVALID");
     }
 
     // GENERATING A TEST TOKEN - NOTE THIS IS NOT COMPLETE AND WILL DENY TOKEN CREATION DUE TO SQL CONSTRAINTS
@@ -163,4 +159,35 @@ async function search(request: any, env: any, ctx: any) {
 
     // return the results in a lovely json format and success of 200 :))
 
+}
+
+/**
+ * Generates a neat response to be sent back to the client
+ * @param client_message The human-readable text to be shown on the client device (if implemented).
+ * @param is_error If the response is an error or not.
+ * @param error_code (Optional) Error code that will be used by client code to match to a specific error.
+ * @returns the JSON object as a string to be sent to the client as a response.
+ */
+async function generate_api_response(client_message: string, http_status: number, is_error: boolean, error_code?: string)
+{
+    let to_return: any = {};
+
+    if (is_error && error_code == undefined) {
+        throw new Error("Error code must be provided if the response is an error.");
+    }
+
+    if (is_error) {
+        to_return = {
+            error: true,
+            message: client_message,
+            error_code: error_code
+        }
+    } else {
+        to_return = {
+            error: false,
+            message: client_message
+        }
+    }
+    
+    return new Response(JSON.stringify(to_return), { status: http_status });
 }
