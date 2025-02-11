@@ -46,6 +46,11 @@ export default class Interactions {
                 // If the character hasnt continued, then it is invalid
                 return false;
             }
+
+            // Also fail against empty bindings
+            if (binding.length == 0) {
+                return false;
+            }
         }
 
         // Make preparations and apply bindings
@@ -122,7 +127,7 @@ export default class Interactions {
         if (s == false) {
             return false;
         }
-        
+
         const results = await s.all();
 
         // Check that the result is valid
