@@ -106,3 +106,24 @@ The worker will import the database API, this will be a middleman between functi
 ### initialiseDatabase()
 
 This function should be called on worker startup, it runs a script to re generate the schema without overwriting previous data.
+After creating the schema, the function will return all of the tables that currently exist inside the database. This is in the form of a list of strings containing the table names.
+
+### async validateToken(token: string)
+
+This function will take in a `token` as a string, and return `true` if the token is found inside the database. If it is not found it will return `false`.
+
+### async generateToken(userid: number, type: string)
+
+This function takes in a `user-id` and a `type`. It will return a generated 32 hexadecimal encoded `token`, a copy of this token is stored in the database and is valid for 1 hour. The `type` of the `token` can be any string, however the convention to use here is:
+
+- `TEST-TOKEN` - For testing purposes
+- `USER` - For a user
+- `PASSWORD` - To identify a users password reset email
+- `VALIDATION` - To identifty a users email verification email
+
+These will be sanity checked in the future once a convention is finalised.
+
+
+
+
+

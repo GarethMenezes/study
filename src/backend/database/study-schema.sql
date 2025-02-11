@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS "uploads" (
 CREATE TABLE IF NOT EXISTS "user-tokens" (
 	"token-id"	INTEGER NOT NULL UNIQUE,
 	"user-id"	INTEGER,
-	"file-id"	INTEGER,
 	"token"	TEXT NOT NULL,
 	"expiration-datetime"	INTEGER,
 	"type"	TEXT NOT NULL,

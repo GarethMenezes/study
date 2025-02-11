@@ -41,8 +41,7 @@ async function handle_request(request: any, env: any, ctx: any) {
     } else if (request.method == "GET") {
         return await handle_get(request, env, ctx, pathname);
     } else if (request.method == "POST") {
-        // Post method is used for e.g. uploading files
-        return;
+        return await handle_post(request, env, ctx, pathname);
     }
     
     // Otherwise, site is not found
@@ -70,21 +69,37 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
     const db = new dbAPI(env);
 
     // Determine what to GET
-    if (pathname.startsWith('/tables')) { // TEMPORARY, REMOVE WHEN DEPLOYING
+    if (pathname.startsWith('/tables')) { // TEMPORARY, DISABLE WHEN DEPLOYING
         const tables = await db.initialiseDatabase();
         return new Response("Tables Found: " + tables, { status: 200 });
+
+    } else if (pathname.startsWith('/search')) {
+        // Return the search method
+        return await search(request, env, ctx);
+
+    }
+
+    // Otherwise, No data found
+    return new Response("Not Found", { status: 404 });
+}
+
+
+// Function to handle connections with POST method
+async function handle_post(request: any, env: any, ctx:any, pathname: string) {
+    // Create an API instance
+    const db = new dbAPI(env);
+
+    // Determine what to POST
+    if (pathname.startsWith('/upload')) {
+        return await upload(request, env, ctx);
+
     } else if (pathname.startsWith('/search')) {
         // Returnt the search method
         return await search(request, env, ctx);
-    } else if (pathname.startsWith('/upload')) {
-        if (request.method != "POST") {
-            return new Response("Method not allowed! Follow the iBaguette Study schema and API documentation for uploading resources.", { status: 405 });
-        }
 
-        // If GET and /upload, then return something important e.g token, only upload if correct method...
-        return await upload(request, env, ctx);
     }
 
+    // Otherwise, No data found
     return new Response("Not Found", { status: 404 });
 }
 
@@ -93,6 +108,17 @@ async function upload(request: any, env: any, ctx: any) {
     if (request.method != "POST") {
         return new Response("Method not allowed! Follow the iBaguette Study schema and API documentation for uploading resources.", { status: 405 });
     }
+
+    const db = new dbAPI(env);
+
+    // First validate the users token
+    if (!(await db.validateToken(request.headers.get("Authorisation")))) {
+        return new Response("Token Not Authorised", { status: 401 });
+    }
+
+    // GENERATING A TEST TOKEN - NOTE THIS IS NOT COMPLETE AND WILL DENY TOKEN CREATION DUE TO SQL CONSTRAINTS
+    // const token = await db.generateToken(0, "TEST-TOKEN");
+
     return new Response("todo: add the upload functionality here", { status: 501 });
 
     // look for token/auth in request headers. early return 401 if not found
