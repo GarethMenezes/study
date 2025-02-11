@@ -11,6 +11,57 @@ export default class Interactions {
     }
 
 
+    // Function to check if a prepared SQL statement is malicious
+    async SQLPrepare(statement: string, bindings: string[]) {
+
+        // Sanitise bindings
+        // binding characters should be only "a-z", "A-Z", "0-9", "-" or "_"
+        for (const binding of bindings) {
+            for (let i = 0; i < binding.length; i++) {
+                if (binding.charCodeAt(i) >= 48 && binding.charCodeAt(i) <= 57) {
+                    // Character is "0-9"
+                    continue;
+                }
+
+                if (binding.charCodeAt(i) >= 65 && binding.charCodeAt(i) <= 90) {
+                    // Character is "A-Z"
+                    continue;
+                }
+
+                if (binding.charCodeAt(i) >= 97 && binding.charCodeAt(i) <= 122) {
+                    // Character is "a-z"
+                    continue;
+                }
+
+                if (binding.charCodeAt(i) == 95) {
+                    // Character is "_"
+                    continue;
+                }
+
+                if (binding.charCodeAt(i) == 45) {
+                    // Character is "-"
+                    continue;
+                }
+
+                // If the character hasnt continued, then it is invalid
+                return false;
+            }
+        }
+
+        // Make preparations and apply bindings
+        const SQLStatement = this.db.prepare(statement)
+
+        try {
+            // Bind each of the bindings
+            SQLStatement.bind(bindings);
+        } catch (e) {
+            return false;
+        }
+
+        // Return the final statement
+        return SQLStatement
+    }
+
     // Function to initialise the schema
     async initialiseDatabase() {
         // Note study-schema.sql is a copy of the schema defined here:
@@ -54,15 +105,25 @@ export default class Interactions {
 
 
     // Function to insert a new token into the database
-    async newToken(userid: number, token: string, type: string, expiration: number) {        
-        const insertion = await this.db.prepare('INSERT INTO "tokens" ("user-id","token","expiration-datetime","type") VALUES (?,?,?,?)').bind(userid, token, expiration, type);
-        return await insertion.run();
+    async newToken(userid: number, token: string, type: string, expiration: number) { 
+        const s = await this.SQLPrepare('INSERT INTO "tokens" ("user-id","token","expiration-datetime","type") VALUES (?,?,?,?)', [userid as unknown as string, token, expiration as unknown as string, type])
+        if (s == false) {
+            return false;
+        }
+        const insertion = await s.run()
+        return insertion;
     }
 
 
     // Function to get the data surrounding a token
     async getToken(token: string) {
-        const results = await this.db.prepare('SELECT * FROM "tokens" WHERE "token" = ?;').bind(token).all();
+        // Get matching tokens
+        const s = await this.SQLPrepare('SELECT * FROM "tokens" WHERE "token" = ?;', [token]);
+        if (s == false) {
+            return false;
+        }
+        
+        const results = await s.all();
 
         // Check that the result is valid
         if (results == null) 
@@ -72,11 +133,16 @@ export default class Interactions {
             return false;
 
         // Is the token not expired?
-        if ((results.results[0]["expiration-datetime"] as number) <= (Math.floor(Date.now() / 1000) as number))
+        if ((results.results[0]["expiration-datetime"] as number) <= (Math.floor(Date.now() / 1000) as number)) {
             // Token is expired
             // Delete the entry and return false
-            await this.db.prepare('DELETE FROM "tokens" WHERE "token" = ?;').bind(token).run();
+            const s = await this.SQLPrepare('DELETE FROM "tokens" WHERE "token" = ?;', [token]);
+            if (s == false) {
+                return false;
+            }
+            await s.run();
             return false;
+        }
 
         // Otherwise the token is real and valid
         return true;
