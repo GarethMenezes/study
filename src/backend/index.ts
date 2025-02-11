@@ -65,26 +65,27 @@ function handle_options(request: any) {
 
 // Function to handle connections with GET method
 async function handle_get(request: any, env: any, ctx:any, pathname: string) {
-    // Create an API instance
-    const db = new dbAPI(env);
 
     // Determine what to GET
     if (pathname.startsWith('/tables')) {
+        // Create an API instance
+        const db = new dbAPI(env);
+
         // Get the data
         const data = await db.initialiseDatabase(env);
 
-        // // Check we are in DEVELOPMENT
-        // if (data == false) {
-        //     // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
-        //     return generate_api_response("Cannot access this site in production.", 403, true, "no_access");
-        // }
+        // Check we are in DEVELOPMENT
+        if (data == false) {
+            // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
+            return generate_api_response("Cannot access this site in production.", 403, true, "no_access");
+        }
         
         // If we are, then prepare the data
         // Concatenate it together
         let message : string = "";
-        // for (const dat of data) {
-        //     message = message.concat(dat)
-        // }
+        for (const dat of data) {
+            message = message.concat(dat)
+        }
 
         // Provide it back
         return new Response("Tables Found: " + message, { status: 200 });
@@ -101,14 +102,13 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
 
 // Function to handle connections with POST method
 async function handle_post(request: any, env: any, ctx:any, pathname: string) {
-    // Create an API instance
-    const db = new dbAPI(env);
-
     // Evaluate and match the endpoint
     if (pathname.startsWith('/upload')) {
         return await upload(request, env, ctx);
     } else if (pathname.startsWith('/search')) {
         return await search(request, env, ctx);
+    } else if (pathname.startsWith('/register/user')) {
+        return await new_user_register(request, env, ctx);
     }
 
     // For all other routes, it was unknown/unimplemented
@@ -118,13 +118,15 @@ async function handle_post(request: any, env: any, ctx:any, pathname: string) {
 
 async function upload(request: any, env: any, ctx: any) {
     const db = new dbAPI(env);
+    const requestData = await request.json();
+    const Authorisation: any = requestData.Authorisation;
 
     // First validate the users token
-    if (!request.headers.has("Authorisation")) {
+    if (!requestData.hasOwnProperty("Authorisation")) {
         return generate_api_response("No authorisation token provided.", 401, true, "AUTH_MISSING");
     };
 
-    if (!(await db.validateToken(request.headers.get("Authorisation")))) {
+    if (!(await db.validateToken(Authorisation))) {
         return generate_api_response("Authentication is invalid, please sign in again.", 401, true, "AUTH_INVALID");
     }
 
@@ -158,6 +160,47 @@ async function search(request: any, env: any, ctx: any) {
     // do the corresponding sql stuff and get the results
 
     // return the results in a lovely json format and success of 200 :))
+
+}
+
+
+// Function to handle creating a new user
+async function new_user_register(request:any, env:any, ctx:any) {
+    const db = new dbAPI(env);
+
+    // Break the json into the data submitted
+    const { email, username, password} = await request.json();
+
+    // Sanity check
+
+    // Pass it to the dbAPI
+    const success = await db.newUserRegister(email, username, password);
+
+    // Check if it was added successfully
+    if (success != true) {
+        // If it wasnt, return an error message
+        if (success != "FAILED") {
+            return await generate_api_response(success, 400, true, success);
+        } else {
+            return await generate_api_response(success, 500, true, success);
+        }
+    }
+
+    // If it was added succesfully, then get the record
+    const record = await db.getUser(username);
+
+    const id = record["user-id"];
+
+    // Generate a token for that user
+    const token = await db.generateToken(id, "USER-ACCESS");
+
+    // Validate that the token was made
+    if (token == false) {
+        return await generate_api_response("Failed to generate token", 500, true, "Could not generate token for new user in new_user_register");
+    }
+
+    // Respond with the token if successfull
+    return await generate_api_response(token, 200, false);
 
 }
 

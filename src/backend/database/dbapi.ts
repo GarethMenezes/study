@@ -10,6 +10,160 @@ export default class dbAPI {
     }
     
 
+    // Function to check if an email is valid
+    async validateEmail(email: string) {
+
+        // Must have "@"
+        if (!email.includes("@"))
+            return false;
+
+        // Ensure there is only one "@"
+        const parts = email.split("@");
+        if (parts.length != 2)
+            return false;
+
+        // Split it into before the "@" and after
+        const [local, domain] = parts;
+
+        // Both sides must exist
+        if (local.length == 0 || domain.length == 0)
+            return false;
+
+
+        // Domain part must have a "."
+        if (!domain.includes("."))
+            return false;
+
+        // Split the domain section by the "."
+        const domainParts = domain.split(".");
+
+        // Both parts must exist
+        if (domainParts[0].length == 0 || domainParts[1].length == 0)
+            return false;
+
+        // If this passes, then the domain "looks" valid
+        return true;
+    }
+
+
+    // Function to validate a uniform input (has no spaces). This is for usernames, passwords, etc.
+    async validateUniformInput(username: string) {
+        // Usernames can contain letters, - and _
+        const allowedChars = new Set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_!?:;@.,");
+
+        // Ensure username only contains these
+        for (let i = 0; i < username.length; i++) {
+            if (!allowedChars.has(username[i]))
+                return false;
+        }
+
+        // Otherwise, it is valid
+        return true;
+
+    }
+
+
+    // Function to hash a password
+    async hashPassword(password: string) {
+        // Set up to hash
+        const encoder = new TextEncoder();
+        const passwordBuffer = encoder.encode(password);
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+
+        // Create key
+
+        const keyMaterial = await crypto.subtle.importKey(
+            "raw",
+            passwordBuffer,
+            { name: "PBKDF2" },
+            false,
+            ["deriveBits"]);
+    
+        const derivedKey = await crypto.subtle.deriveBits({
+                name: "PBKDF2",
+                salt,
+                iterations: 100000,
+                hash: "SHA-256"},
+                keyMaterial,
+                256);
+
+        const saltBase64 = btoa(String.fromCharCode(...(salt)));
+        const derivedKeyBase64 = btoa(String.fromCharCode(...new Uint8Array(derivedKey)));
+
+        const hash = `${saltBase64}.${derivedKeyBase64}`;
+
+        return hash;
+    }
+
+
+    // Function to get a single users record from the databse
+    async getUser(username: string) {
+        return await this.controller.getUser(username=username);
+    }
+
+
+    // Function to validate if a user exists
+    async validateUser(userid?: string, username?: string) {
+        // User the controllers get user to determine if it exists
+        if (typeof userid != "undefined") {
+            return await this.controller.getUser(userid=userid);
+        }
+
+        if (typeof username != "undefined") {
+            return await this.controller.getUser(username=username);
+        } 
+
+        // If neither, return false
+        return false;
+    }
+
+
+    // Function to register a new user in the database
+    async newUserRegister(email: string, username: string, password: string) {
+        // Check that a user with this email doesnt already exist
+        let results = await this.controller.getUser(email=email);
+        if (typeof results != "undefined") {
+            return "INVALID-EMAIL";
+        }
+
+        // Check that a user with this username doesnt already exist
+        results = await this.controller.getUser(username=username);
+        if (typeof results != "undefined") {
+            return "INVALID-USERNAME";
+        }
+    
+        // User does not already exist!
+
+        // Validate the email
+        if (!this.validateEmail(email)) {
+            return "INVALID-EMAIL";
+        }
+
+        // Validate the username
+        if (!this.validateUniformInput(username)) {
+            return "INVALID-USERNAME";
+        }
+
+        // Validate the password
+        if (!this.validateUniformInput(password)) {
+            return "INVALID-PASSWORD";
+        }
+        
+        // Hash the password
+        const hashedPassword: string = await this.hashPassword(password);
+
+        // Create entry for the user
+        const success = await this.controller.newUser(email, username, hashedPassword, "VERIFYING", "en");
+
+        if (success == false) {
+            return "FAILED";
+        }
+
+        // If the user was added successfully
+        return true;
+    }
+
+
     // Function to create the database and return an array of tables
     async initialiseDatabase(env: any) {
         // Initialise the DB if it hasnt been already
@@ -66,6 +220,10 @@ export default class dbAPI {
     async validateToken(token: string) {
 
         // Sanity check input
+        if (typeof token == "undefined") {
+            return false;
+        }
+
         if (token.length == 0) {
             return false;
         }
@@ -78,10 +236,11 @@ export default class dbAPI {
 
 
     // Function to generate a token for a user
-    async generateToken(userid: number, type: string) {
+    async generateToken(userid: string, type: string) {
 
-        // TODO: Validate that the user exists
-        // NO METHOD OF ADDING USERS YET
+        // Verify that the user exists
+        if (await this.getUser(userid=userid) == false)
+            return false;
 
         // Generate a token
         // Create an array of hexadecimal values 32 elements long

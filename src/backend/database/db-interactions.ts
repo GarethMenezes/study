@@ -12,41 +12,21 @@ export default class Interactions {
 
 
     // Function to check if a prepared SQL statement is malicious
-    async SQLPrepare(statement: string, bindings: string[]) {
-
+    async SQLPrepare(statement: string, bindings: any[]) {
         // Sanitise bindings
-        // binding characters should be only "a-z", "A-Z", "0-9", "-" or "_"
-        for (const binding of bindings) {
+        // binding characters should be only specific characters...
+        for (let i = 0; i < bindings.length; i++) {
+            let binding = bindings[i];
+            // Usernames can contain letters, and a few others
+            const allowedChars = new Set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_!?:;@.,+/=");
+
+            // Ensure username only contains these
             for (let i = 0; i < binding.length; i++) {
-                if (binding.charCodeAt(i) >= 48 && binding.charCodeAt(i) <= 57) {
-                    // Character is "0-9"
-                    continue;
+                if (!allowedChars.has(binding[i])) {
+                    return false;
                 }
-
-                if (binding.charCodeAt(i) >= 65 && binding.charCodeAt(i) <= 90) {
-                    // Character is "A-Z"
-                    continue;
-                }
-
-                if (binding.charCodeAt(i) >= 97 && binding.charCodeAt(i) <= 122) {
-                    // Character is "a-z"
-                    continue;
-                }
-
-                if (binding.charCodeAt(i) == 95) {
-                    // Character is "_"
-                    continue;
-                }
-
-                if (binding.charCodeAt(i) == 45) {
-                    // Character is "-"
-                    continue;
-                }
-
-                // If the character hasnt continued, then it is invalid
-                return false;
             }
-
+    
             // Also fail against empty bindings
             if (binding.length == 0) {
                 return false;
@@ -54,18 +34,42 @@ export default class Interactions {
         }
 
         // Make preparations and apply bindings
-        const SQLStatement = this.db.prepare(statement)
+        let SQLStatement = this.db.prepare(statement);
 
+        console.log(SQLStatement, statement, bindings)
         try {
             // Bind each of the bindings
-            SQLStatement.bind(bindings);
+            SQLStatement = SQLStatement.bind(bindings);
+
+        // Catch any errors that occur
         } catch (e) {
+            console.log(e);
             return false;
         }
 
         // Return the final statement
         return SQLStatement
     }
+
+
+    // Function to insert into the users database
+    async newUser(email: string, username: string, password: string, state: string, language: string) {
+
+        const datetime: number = (Math.floor(Date.now() / 1000));
+        const bindings: any[] = [email, password, username, state, "false", language, datetime, datetime];
+        console.log(bindings);
+        const s = await this.SQLPrepare('INSERT INTO "users" ("email","password","username","status","verification-state","language","last-reset-datetime","last-activity-datetime") VALUES (?,?,?,?,?,?,?,?)', bindings);
+
+        console.log("ASDASDASDASD ", s)
+
+        if (s == false) {
+            return false;
+        }
+
+        const insertion = await s.run()
+        return insertion;
+    }
+
 
     // Function to initialise the schema
     async initialiseDatabase() {
@@ -104,19 +108,67 @@ export default class Interactions {
             return false; // NOT ALLOWED TO READ THIS TABLE IN PRODUCTION
         }
         // Otherwise, get the data
-        const results = await this.db.prepare('SELECT * FROM "tokens";').all();
+        const results = await this.db.prepare('SELECT * FROM "tokens"').all();
         return results.results;
     }
 
 
     // Function to insert a new token into the database
-    async newToken(userid: number, token: string, type: string, expiration: number) { 
-        const s = await this.SQLPrepare('INSERT INTO "tokens" ("user-id","token","expiration-datetime","type") VALUES (?,?,?,?)', [userid as unknown as string, token, expiration as unknown as string, type])
+    async newToken(userid: string, token: string, type: string, expiration: number) { 
+        const s = await this.SQLPrepare('INSERT INTO "tokens" ("user-id","token","expiration-datetime","type") VALUES (?,?,?,?)', [userid, token, expiration as unknown as string, type])
         if (s == false) {
             return false;
         }
         const insertion = await s.run()
         return insertion;
+    }
+
+
+    // Function to get a list of users matching a sort critiera
+    async getUser(email?: string, username?: string, userid?: string) {
+    
+        // Create the SQL Query based on the inputs
+        let searchCriteria: string = "";
+        let bindings: string[] = [];
+
+        // Is there a userid?
+        if (typeof userid != "undefined") {
+            // If there is create the search query
+            searchCriteria = 'WHERE "user-id" = ?';
+            bindings.push(userid);
+        }
+
+        // If there isnt a user-id a more complex search may be needed
+        else {
+
+            if (typeof email != "undefined" && typeof username != "undefined") {
+                searchCriteria = 'WHERE "email" = ? AND "username" = ?';
+                bindings.push(email);
+                bindings.push(username);
+            }
+
+            else if (typeof email != "undefined") {
+                searchCriteria = 'WHERE "email" = ?';
+                bindings.push(email);
+            }
+
+            else if (typeof username != "undefined") {
+                searchCriteria = 'WHERE "username" = ?';
+                bindings.push(username);
+            }
+
+        }
+
+        // Prepare the query
+        let SQLStatement: string = 'SELECT * FROM "users" ';
+        SQLStatement = SQLStatement.concat(searchCriteria);
+        let s = await this.SQLPrepare(SQLStatement, bindings);
+        if (s == false) {
+            return false;
+        }
+
+        // Return its result
+        return (await s.all()).results[0];
     }
 
 
