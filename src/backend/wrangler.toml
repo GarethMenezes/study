@@ -31,7 +31,7 @@ binding = 'resources_bucket'
 bucket_name = 'study-storage'
 
 [[env.dev.d1_databases]]
-binding = "resources_db"
+binding = "DEV_resources_db"
 database_name = "resources-db-DEV"
 database_id = "a0fde410-1351-41e3-b746-e724e48ea2ac"
 

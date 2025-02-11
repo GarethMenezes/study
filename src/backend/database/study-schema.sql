@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS "feedback" (
 CREATE TABLE IF NOT EXISTS "uploads" (
 	"upload-id"	INTEGER NOT NULL UNIQUE,
 	"user-id"	INTEGER NOT NULL,
-	"auth-token"	INTEGER NOT NULL,
 	"datetime"	INTEGER NOT NULL,
 	"file-count"	INTEGER,
 	"title"	TEXT NOT NULL,
@@ -33,7 +32,7 @@ CREATE TABLE IF NOT EXISTS "uploads" (
 	PRIMARY KEY("upload-id" AUTOINCREMENT),
 	FOREIGN KEY("user-id") REFERENCES "users"("user-id")
 );
-CREATE TABLE IF NOT EXISTS "user-tokens" (
+CREATE TABLE IF NOT EXISTS "tokens" (
 	"token-id"	INTEGER NOT NULL UNIQUE,
 	"user-id"	INTEGER,
 	"token"	TEXT NOT NULL,
