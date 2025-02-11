@@ -26,7 +26,7 @@ An automated build process is used to build the backend worker. HOWEVER, to buil
 
 On every commit, the worker is automatically built with `npx wrangler deploy` on the Cloudflare Workers platform; the status of the build can be seen in the runs next to each commit.
 
-To run locally in development mode, use `npx wrangler dev` from the `src/backend` directory. This will start a local server on `http://127.0.0.1:8787`. It'll auto reload on changes and display logs in the console.
+To run locally in development mode, use `npx wrangler dev --env dev` from the `src/backend` directory. This will start a local server on `http://127.0.0.1:8787`. It'll auto reload on changes and display logs in the console.
 
 ## Testing
 

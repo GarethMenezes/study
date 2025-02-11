@@ -11,14 +11,44 @@ export default class dbAPI {
     
 
     // Function to create the database and return an array of tables
-    async initialiseDatabase() {
+    async initialiseDatabase(env: any) {
         // Initialise the DB if it hasnt been already
         await this.controller.initialiseDatabase();
-        let tables : string[] = [];
-        const results = await this.controller.getTablesIntegrity();
-        for (const result of results)
-            tables.push(result.name);
-        return tables;
+        let message : string[] = [];
+
+        // Get tables
+        const tables = await this.controller.getTablesIntegrity(env);
+        
+        // Get tokens
+        const tokens = await this.controller.getTokensTable(env);
+
+        // Output the tokens found
+        message.push("\n Tokens:    ")
+        if (tokens != false) {
+            for (const result of tokens) {
+                message.push((result.user) as string);
+                message.push("-");
+                message.push(result.token);
+                message.push("-");
+                message.push((result.expiration) as string);
+                message.push(", ");
+            }
+        } else {
+            message.push("NO ACCESS");
+        }
+
+        // Output the tables found
+        message.push("\n Tables:    ")
+        if (tables != false) {
+            for (const result of tables) {
+                message.push(result.name);
+                message.push(", ");
+            }
+        } else {
+            message.push("NO ACCESS");
+        }
+
+        return message;
     }
 
 

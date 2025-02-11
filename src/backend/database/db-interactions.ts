@@ -1,8 +1,50 @@
 export default class Interactions {
     db: any;
 
-    constructor(env) {
+    constructor(env: any) {
         this.db = env.DEV_resources_db; // Get the D1 binding 
+    }
+
+
+    // Function to initialise the schema
+    async initialiseDatabase() {
+        // Note study-schema.sql is a copy of the schema defined here:
+        const schema = [
+            `CREATE TABLE IF NOT EXISTS "users" ("user-id"	INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,"email" TEXT,"password" TEXT,"username" TEXT,"status" TEXT NOT NULL,"verification-state" TEXT NOT NULL,"verified-datetime" INTEGER,"language" TEXT NOT NULL,"last-reset-datetime" INTEGER,"last-activity-datetime" INTEGER);`,
+            `CREATE TABLE IF NOT EXISTS "feedback" ("feedback-id" INTEGER NOT NULL UNIQUE,"user-id" INTEGER,"submittion-datetime" INTEGER,"content" TEXT NOT NULL,PRIMARY KEY("feedback-id" AUTOINCREMENT),FOREIGN KEY("user-id") REFERENCES "users"("user-id"));`,
+            `CREATE TABLE IF NOT EXISTS "uploads" ("upload-id" INTEGER NOT NULL UNIQUE,"user-id" INTEGER NOT NULL,"auth-token" INTEGER NOT NULL,"datetime" INTEGER NOT NULL,"file-count" INTEGER,"title" TEXT NOT NULL,"description" TEXT,"marks" TEXT,"grade" TEXT,"tos" TEXT NOT NULL DEFAULT 'false',"hide-name" TEXT NOT NULL DEFAULT 'true',"watermark" TEXT NOT NULL DEFAULT 'true',"allow-indexing" TEXT NOT NULL DEFAULT 'true',"allow-ai-training" TEXT NOT NULL DEFAULT 'false',"report-analytics" TEXT NOT NULL DEFAULT 'false',"monetise" TEXT NOT NULL DEFAULT 'true',"tier" TEXT,"subject" TEXT,"exam-board" TEXT,"resource-type" TEXT,"path" TEXT NOT NULL,"data" TEXT,PRIMARY KEY("upload-id" AUTOINCREMENT),FOREIGN KEY("user-id") REFERENCES "users"("user-id"));`,
+            `CREATE TABLE IF NOT EXISTS "user-tokens" ("token-id" INTEGER NOT NULL UNIQUE,"user-id" INTEGER,"file-id" INTEGER,"token" TEXT NOT NULL,"expiration-datetime" INTEGER,"type" TEXT NOT NULL,PRIMARY KEY("token-id" AUTOINCREMENT),FOREIGN KEY("user-id") REFERENCES "users"("user-id"));`
+        ];
+        
+        // Run the schema, this will create the database.
+        // Note using "CREATE IF NOT EXISTS" prevents overwriting old data.
+        for (const SQLStatement of schema) {
+            await this.db.exec(SQLStatement);
+        }
+    }
+
+
+    // Function to get all of the tables in the schema
+    async getTablesIntegrity(env: any) {
+        // Are we on the production environment or database?
+        if (!env.hasOwnProperty("DEV_resources_db") || env.ENVIRONMENT_MODE == "production") {
+            return false; // NOT ALLOWED TO READ THIS TABLE IN PRODUCTION
+        }
+        // Otherwise, get the data
+        const tables = await this.db.prepare("SELECT * FROM sqlite_master WHERE type='table';").all();
+        return tables.results;
+    }
+
+
+    // Function to access the tokens table
+    async getTokensTable(env: any) {
+        // Are we on the production environment or database?
+        if (!env.hasOwnProperty("DEV_resources_db") || env.ENVIRONMENT_MODE == "production") {
+            return false; // NOT ALLOWED TO READ THIS TABLE IN PRODUCTION
+        }
+        // Otherwise, get the data
+        const results = await this.db.prepare('SELECT * FROM "user-tokens";').all();
+        return results.results;
     }
 
 
@@ -34,29 +76,4 @@ export default class Interactions {
         // Otherwise the token is real and valid
         return true;
     }
-
-
-    // Function to get all of the tables in the schema
-    async getTablesIntegrity() {
-        const tables = await this.db.prepare("SELECT * FROM sqlite_master WHERE type='table';").all();
-        return tables.results;
-    }
-
-
-    // Function to initialise the schema
-    async initialiseDatabase() {
-        // Note study-schema.sql is a copy of the schema defined here:
-        const schema = [
-            `CREATE TABLE IF NOT EXISTS "users" ("user-id"	INTEGER NOT NULL UNIQUE PRIMARY KEY AUTOINCREMENT,"email" TEXT,"password" TEXT,"username" TEXT,"status" TEXT NOT NULL,"verification-state" TEXT NOT NULL,"verified-datetime" INTEGER,"language" TEXT NOT NULL,"last-reset-datetime" INTEGER,"last-activity-datetime" INTEGER);`,
-            `CREATE TABLE IF NOT EXISTS "feedback" ("feedback-id" INTEGER NOT NULL UNIQUE,"user-id" INTEGER,"submittion-datetime" INTEGER,"content" TEXT NOT NULL,PRIMARY KEY("feedback-id" AUTOINCREMENT),FOREIGN KEY("user-id") REFERENCES "users"("user-id"));`,
-            `CREATE TABLE IF NOT EXISTS "uploads" ("upload-id" INTEGER NOT NULL UNIQUE,"user-id" INTEGER NOT NULL,"auth-token" INTEGER NOT NULL,"datetime" INTEGER NOT NULL,"file-count" INTEGER,"title" TEXT NOT NULL,"description" TEXT,"marks" TEXT,"grade" TEXT,"tos" TEXT NOT NULL DEFAULT 'false',"hide-name" TEXT NOT NULL DEFAULT 'true',"watermark" TEXT NOT NULL DEFAULT 'true',"allow-indexing" TEXT NOT NULL DEFAULT 'true',"allow-ai-training" TEXT NOT NULL DEFAULT 'false',"report-analytics" TEXT NOT NULL DEFAULT 'false',"monetise" TEXT NOT NULL DEFAULT 'true',"tier" TEXT,"subject" TEXT,"exam-board" TEXT,"resource-type" TEXT,"path" TEXT NOT NULL,"data" TEXT,PRIMARY KEY("upload-id" AUTOINCREMENT),FOREIGN KEY("user-id") REFERENCES "users"("user-id"));`,
-            `CREATE TABLE IF NOT EXISTS "user-tokens" ("token-id" INTEGER NOT NULL UNIQUE,"user-id" INTEGER,"file-id" INTEGER,"token" TEXT NOT NULL,"expiration-datetime" INTEGER,"type" TEXT NOT NULL,PRIMARY KEY("token-id" AUTOINCREMENT),FOREIGN KEY("user-id") REFERENCES "users"("user-id"));`
-        ];
-        
-        // Run the schema, this will create the database.
-        // Note using "CREATE IF NOT EXISTS" prevents overwriting old data.
-        for (const statement of schema)
-            await this.db.exec(statement);
-    }
-
 }

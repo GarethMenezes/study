@@ -20,3 +20,21 @@ database_id = "a0fde410-1351-41e3-b746-e724e48ea2ac"
 # binding = "resources_db"
 # database_name = "resources-db"
 # database_id = "3d9ef277-18ee-4b6c-9266-b8cef6d2ea35"
+
+[vars]
+ENVIRONMENT_MODE = "production"
+
+# DEVELOPMENT ENVIRONMENT
+[env.dev]
+[[r2_buckets]]
+binding = 'resources_bucket'
+bucket_name = 'study-storage'
+
+[[d1_databases]]
+# Dev branch  
+binding = "DEV_resources_db"
+database_name = "resources-db-DEV"
+database_id = "a0fde410-1351-41e3-b746-e724e48ea2ac"
+
+[env.dev.vars]
+ENVIRONMENT_MODE = "development"

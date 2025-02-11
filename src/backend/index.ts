@@ -69,9 +69,25 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
     const db = new dbAPI(env);
 
     // Determine what to GET
-    if (pathname.startsWith('/tables')) { // TEMPORARY, DISABLE WHEN DEPLOYING
-        const tables = await db.initialiseDatabase();
-        return new Response("Tables Found: " + tables, { status: 200 });
+    if (pathname.startsWith('/tables')) {
+        // Get the data
+        const data = await db.initialiseDatabase(env);
+
+        // Check we are in DEVELOPMENT mode AND on the DEV DB
+        if (env.hasOwnProperty("resources_db") || env.ENVIRONMENT == "production") {
+            // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
+            return new Response("Not Found", { status: 404 });
+        }
+        
+        // If we are, then prepare the data
+        // Concatenate it together
+        let message : string = "";
+        for (const dat of data) {
+            message = message.concat(dat)
+        }
+
+        // Provide it back
+        return new Response("Tables Found: " + message, { status: 200 });
 
     } else if (pathname.startsWith('/search')) {
         // Return the search method
