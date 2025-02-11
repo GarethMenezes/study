@@ -13,6 +13,7 @@ let localhost_server_url: string = "http://localhost:8787"; // local testing ser
 var button1 = document.getElementById('button1');
 var main_text_component = document.getElementById('main_text_component');
 var toggleButton = document.getElementById('toggleButton');
+var searchButton = document.getElementById('searchButton');
 
 if (button1) {
     button1.addEventListener('click', function() {
@@ -31,6 +32,21 @@ if (button1) {
         }
     });
 }
+
+
+if (searchButton) {
+    searchButton.addEventListener('click', function() {
+        // toggle between localhost and base server
+        if (base_server_url == "https://study-backend.ibaguette.com") {
+            base_server_url = localhost_server_url;
+        } else {
+            base_server_url = "https://study-backend.ibaguette.com";
+        }
+        update_text("Server URL: " + base_server_url);
+    });
+}
+
+
 
 if (toggleButton) {
     toggleButton.addEventListener('click', function() {

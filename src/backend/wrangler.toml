@@ -10,7 +10,7 @@ route = { pattern = "study-backend.ibaguette.com/*", zone_name = "ibaguette.com"
 [[r2_buckets]]
 binding = 'resources_bucket'
 bucket_name = 'study-storage'
-
+preview_bucket_name = "study-storage-dev"
 
 
 # Production d1_database
@@ -29,11 +29,13 @@ ENVIRONMENT_MODE = "production"
 [[env.dev.r2_buckets]]
 binding = 'resources_bucket'
 bucket_name = 'study-storage'
+preview_bucket_name = "study-storage-dev"
 
 [[env.dev.d1_databases]]
 binding = "DEV_resources_db"
 database_name = "resources-db-DEV"
 database_id = "a0fde410-1351-41e3-b746-e724e48ea2ac"
+preview_database_id = "643bbf15-a5c3-405f-b61d-a3f8a3480e45"
 
 [env.dev.vars]
 ENVIRONMENT_MODE = "development"

@@ -73,18 +73,18 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
         // Get the data
         const data = await db.initialiseDatabase(env);
 
-        // Check we are in DEVELOPMENT
-        if (data == false) {
-            // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
-            return generate_api_response("Cannot access this site in production.", 403, true, "no_access");
-        }
+        // // Check we are in DEVELOPMENT
+        // if (data == false) {
+        //     // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
+        //     return generate_api_response("Cannot access this site in production.", 403, true, "no_access");
+        // }
         
         // If we are, then prepare the data
         // Concatenate it together
         let message : string = "";
-        for (const dat of data) {
-            message = message.concat(dat)
-        }
+        // for (const dat of data) {
+        //     message = message.concat(dat)
+        // }
 
         // Provide it back
         return new Response("Tables Found: " + message, { status: 200 });
