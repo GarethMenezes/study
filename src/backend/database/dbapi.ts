@@ -26,12 +26,14 @@ export default class dbAPI {
         message.push("\n Tokens:    ")
         if (tokens != false) {
             for (const result of tokens) {
-                message.push((result.user) as string);
+                message.push((result["user-id"]) as string);
                 message.push("-");
                 message.push(result.token);
                 message.push("-");
-                message.push((result.expiration) as string);
-                message.push(", ");
+                message.push((result["expiration-datetime"]) as string);
+                message.push("-");
+                message.push((result.type) as string);
+               message.push(", ");
             }
         } else {
             message.push("NO ACCESS");
@@ -47,6 +49,10 @@ export default class dbAPI {
         } else {
             message.push("NO ACCESS");
         }
+
+        // Append the datetime epoch for debugging
+        message.push("\n Current Epoch: ")
+        message.push(Math.floor(Date.now() / 1000) as unknown as string)
 
         return message;
     }

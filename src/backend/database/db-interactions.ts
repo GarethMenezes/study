@@ -2,7 +2,7 @@ export default class Interactions {
     db: any;
 
     constructor(env: any) {
-        this.db = env.DEV_resources_db; // Get the D1 binding 
+        this.db = env.resources_db; // Get the D1 binding 
     }
 
 
@@ -26,8 +26,8 @@ export default class Interactions {
 
     // Function to get all of the tables in the schema
     async getTablesIntegrity(env: any) {
-        // Are we on the production environment or database?
-        if (!env.hasOwnProperty("DEV_resources_db") || env.ENVIRONMENT_MODE == "production") {
+        // Are we on the production environment or development?
+        if (env.ENVIRONMENT_MODE == "production") {
             return false; // NOT ALLOWED TO READ THIS TABLE IN PRODUCTION
         }
         // Otherwise, get the data
@@ -39,7 +39,7 @@ export default class Interactions {
     // Function to access the tokens table
     async getTokensTable(env: any) {
         // Are we on the production environment or database?
-        if (!env.hasOwnProperty("DEV_resources_db") || env.ENVIRONMENT_MODE == "production") {
+        if (env.ENVIRONMENT_MODE == "production") {
             return false; // NOT ALLOWED TO READ THIS TABLE IN PRODUCTION
         }
         // Otherwise, get the data
@@ -67,7 +67,7 @@ export default class Interactions {
             return false;
 
         // Is the token not expired?
-        if (results.results[0].expiration <= Math.floor(Date.now() / 1000))
+        if ((results.results[0].expiration as number) <= (Math.floor(Date.now() / 1000) as number))
             // Token is expired
             // Delete the entry and return false
             await this.db.prepare('DELETE FROM "user-tokens" WHERE "token" = ?;').run();

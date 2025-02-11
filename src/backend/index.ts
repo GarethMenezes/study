@@ -73,8 +73,8 @@ async function handle_get(request: any, env: any, ctx:any, pathname: string) {
         // Get the data
         const data = await db.initialiseDatabase(env);
 
-        // Check we are in DEVELOPMENT mode AND on the DEV DB
-        if (env.hasOwnProperty("resources_db") || env.ENVIRONMENT == "production") {
+        // Check we are in DEVELOPMENT
+        if (data[1] == "NO ACCESS") {
             // NOT ALLOWED TO READ THIS SITE IN PRODUCTION
             return new Response("Not Found", { status: 404 });
         }
