@@ -63,6 +63,52 @@ export default class dbAPI {
     }
 
 
+    // Function to clean up the tokens database, this will remove all expired tokens for a user
+    async cleanTokens(userid: string) {
+        return await this.controller.cleanTokens(userid);
+    }
+
+
+    // Function to compare a password with a hash
+    async verifyPassword(password: string, hash: string) {
+
+        // Split the hash into the salt and key
+        const [saltBase64, derivedKeyBase64] = hash.split(".");
+
+        // Decode the salt back into an array
+        const saltBinary = atob(saltBase64);
+        const salt = Uint8Array.from(saltBinary, char => char.charCodeAt(0));
+
+        // Use the salt to encode the password that the user provided
+        // This is the same as the other algorithm, except the salt is predefined
+        const encoder = new TextEncoder();
+        const passwordBuffer = encoder.encode(password);
+
+        // Create key
+
+        const passwordKeyMaterial = await crypto.subtle.importKey(
+            "raw",
+            passwordBuffer,
+            { name: "PBKDF2" },
+            false,
+            ["deriveBits"]);
+    
+        const passwordDerivedKey = await crypto.subtle.deriveBits({
+                name: "PBKDF2",
+                salt,
+                iterations: 100000, // Max 100000, Ensure this matches the hashing algorithm
+                hash: "SHA-256"},
+                passwordKeyMaterial,
+                256);
+
+        const passwordCheck = btoa(String.fromCharCode(...new Uint8Array(passwordDerivedKey)));
+
+        // Compare the passwords new hash with the stored derived key
+        // MUST be strictly equal
+        return passwordCheck === derivedKeyBase64;
+    }
+  
+
     // Function to hash a password
     async hashPassword(password: string) {
         // Set up to hash
@@ -82,7 +128,7 @@ export default class dbAPI {
         const derivedKey = await crypto.subtle.deriveBits({
                 name: "PBKDF2",
                 salt,
-                iterations: 100000,
+                iterations: 100000, // Max 100000
                 hash: "SHA-256"},
                 keyMaterial,
                 256);
@@ -96,9 +142,21 @@ export default class dbAPI {
     }
 
 
-    // Function to get a single users record from the databse
-    async getUser(user: string) {
+    // Function to get a single users record from the database by their username
+    async getUserByUsername(user: string) {
         return await this.controller.getUser(undefined, user, undefined);
+    }
+
+
+    // Function to get a single users record from the database by their user-id
+    async getUserByUserID(id: string) {
+        return await this.controller.getUser(undefined, undefined, id);
+    }
+
+
+    // Function to get a single users record from the database by their email
+    async getUserByEmail(email: string) {
+        return await this.controller.getUser(email, undefined, undefined);
     }
 
 
@@ -262,7 +320,7 @@ export default class dbAPI {
     async generateToken(userid: string, type: string) {
 
         // Verify that the user exists
-        if (await this.getUser(userid) == false)
+        if (await this.getUserByUsername(userid) == false)
             return false;
 
         // Generate a token

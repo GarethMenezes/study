@@ -107,8 +107,10 @@ async function handle_post(request: any, env: any, ctx:any, pathname: string) {
         return await upload(request, env, ctx);
     } else if (pathname.startsWith('/search')) {
         return await search(request, env, ctx);
-    } else if (pathname.startsWith('/register/user')) {
+    } else if (pathname.startsWith('/users/register')) {
         return await new_user_register(request, env, ctx);
+    } else if (pathname.startsWith('/users/login')) {
+        return await user_login(request, env, ctx);
     }
 
     // For all other routes, it was unknown/unimplemented
@@ -164,6 +166,58 @@ async function search(request: any, env: any, ctx: any) {
 }
 
 
+// Function to handle a user logging in
+async function user_login(request: any, env: any, ctx: any) {
+    const db = new dbAPI(env);
+
+    // Break the json into the data submitted
+    const { username, password } = await request.json();
+
+    // User can log in with EITHER username or email
+    // First check if a user exists with that username
+    let user:string = username;
+    let record = (await db.getUserByUsername(user));
+    
+    // If the user is not found, search for the username as an email...
+    if (typeof record == "undefined") {
+        record = (await db.getUserByEmail(user));
+
+        // If it still does not exist...
+        if (typeof record == "undefined") {
+            // User record does not exist
+            return generate_api_response("INVALID-DETAILS", 406, false);
+        }
+
+    }
+
+    // At this point, a record has been found for the user
+
+    // Check the users password
+    if (!(await db.verifyPassword(password, record["password"]))) {
+        // If it is wrong...
+        return generate_api_response("INVALID-DETAILS", 406, false);
+    }
+
+    // Clean up previous expired user tokens
+    await db.cleanTokens(record["user-id"]);
+    
+    // Generate the user a token
+    const token = await db.generateToken(record["user-id"], "USER-ACCESS");
+
+    // Return basic details of the user and their token
+
+    const result = {
+        Username: record["username"],
+        Authorisation: token,
+        Language: record["language"],
+        Status: record["status"],
+        Email: record["email"]
+    };
+
+    return generate_api_response(JSON.stringify(result), 202, false);
+}
+
+
 // Function to handle creating a new user
 async function new_user_register(request:any, env:any, ctx:any) {
     const db = new dbAPI(env);
@@ -186,7 +240,7 @@ async function new_user_register(request:any, env:any, ctx:any) {
 
     // If it was added succesfully, then get the record
     let user:string = username;
-    const record = (await db.getUser(user));
+    const record = (await db.getUserByUsername(user));
     
     // Record will exist, we just added it
     const id = record["user-id"];
@@ -200,7 +254,7 @@ async function new_user_register(request:any, env:any, ctx:any) {
     }
 
     // Respond with the token if successfull
-    return await generate_api_response(token, 200, false);
+    return await generate_api_response(token, 201, false);
 
 }
 

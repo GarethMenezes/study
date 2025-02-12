@@ -179,6 +179,25 @@ export default class Interactions {
     }
 
 
+    // Function to clean the tokens a user has in the database
+    async cleanTokens(userid: string) {
+        // Get the current datetime + 1s to compare expirations to
+        const datetime = (Math.floor(Date.now() / 1000)) + 1;
+
+        // Prepare and Run an SQL statement to delete the tokens
+        const s = await this.SQLPrepare('DELETE FROM "tokens" WHERE "user-id" = ? AND "expiration-datetime" < ?;', [userid, datetime]);
+        const results = s.run();
+
+        // Validate if it was successful
+        if (typeof results == "undefined") {
+            return false;
+        }
+
+        // Otherwise return how many records were deleted
+        return results.changes;
+    }
+    
+
     // Function to get the data surrounding a token
     async getToken(token: string) {
         // Get matching tokens
