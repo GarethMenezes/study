@@ -113,3 +113,11 @@ Then:
 - Virustotal API thingy here
 
 Once verified and checked
+
+### New Schemas
+
+The new design for the database schema is available [here](src/backend/database/databaseSchemas.md). This contains the tables and a database internal API usage guide.
+
+For the R2 schema see ()[] to see the internal API as well as the the structure used.
+
+For worker guidance see (here)[] for usage and information regarding the requests that the worker will respond to.
