@@ -171,8 +171,6 @@ async function new_user_register(request:any, env:any, ctx:any) {
     // Break the json into the data submitted
     const { email, username, password} = await request.json();
 
-    // Sanity check
-
     // Pass it to the dbAPI
     const success = await db.newUserRegister(email, username, password);
 
@@ -187,8 +185,10 @@ async function new_user_register(request:any, env:any, ctx:any) {
     }
 
     // If it was added succesfully, then get the record
-    const record = await db.getUser(username);
-
+    let user:string = username;
+    const record = (await db.getUser(user));
+    
+    // Record will exist, we just added it
     const id = record["user-id"];
 
     // Generate a token for that user

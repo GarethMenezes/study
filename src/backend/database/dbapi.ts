@@ -97,8 +97,8 @@ export default class dbAPI {
 
 
     // Function to get a single users record from the databse
-    async getUser(username: string) {
-        return await this.controller.getUser(username=username);
+    async getUser(user: string) {
+        return await this.controller.getUser(undefined, user, undefined);
     }
 
 
@@ -106,11 +106,11 @@ export default class dbAPI {
     async validateUser(userid?: string, username?: string) {
         // User the controllers get user to determine if it exists
         if (typeof userid != "undefined") {
-            return await this.controller.getUser(userid=userid);
+            return await this.controller.getUser(undefined, undefined, userid);
         }
 
         if (typeof username != "undefined") {
-            return await this.controller.getUser(username=username);
+            return await this.controller.getUser(undefined, username, undefined);
         } 
 
         // If neither, return false
@@ -121,15 +121,17 @@ export default class dbAPI {
     // Function to register a new user in the database
     async newUserRegister(email: string, username: string, password: string) {
         // Check that a user with this email doesnt already exist
-        let results = await this.controller.getUser(email=email);
+        let results = await this.controller.getUser(email, undefined, undefined);
         if (typeof results != "undefined") {
             return "INVALID-EMAIL";
         }
 
         // Check that a user with this username doesnt already exist
-        results = await this.controller.getUser(username=username);
+        results = await this.controller.getUser(undefined, username, undefined);
         if (typeof results != "undefined") {
-            return "INVALID-USERNAME";
+            if(results.length > 0) {
+                return "INVALID-USERNAME";
+            }
         }
     
         // User does not already exist!
@@ -176,6 +178,10 @@ export default class dbAPI {
         // Get tokens
         const tokens = await this.controller.getTokensTable(env);
 
+        // Get users
+        const users = await this.controller.getUsersTable(env);
+
+        // Prepare output
         if (env.ENVIRONMENT_MODE == "development") {
             // Append the datetime epoch for debugging
             message.push("\n Current Epoch: ")
@@ -204,6 +210,23 @@ export default class dbAPI {
                 for (const result of tables) {
                     message.push(result.name);
                     message.push(", ");
+                }
+            } else {
+                message.push("NO ACCESS OR NO DATA");
+            }
+
+            // Output the users found
+            message.push("\n Users:    ")
+            if (users != false) {
+                for (const result of users) {
+                    message.push((result["user-id"]) as string);
+                    message.push("-");
+                    message.push(result.email);
+                    message.push("-");
+                    message.push((result.username) as string);
+                    message.push("-");
+                    message.push((result.status) as string);
+                message.push(", ");
                 }
             } else {
                 message.push("NO ACCESS OR NO DATA");
@@ -239,7 +262,7 @@ export default class dbAPI {
     async generateToken(userid: string, type: string) {
 
         // Verify that the user exists
-        if (await this.getUser(userid=userid) == false)
+        if (await this.getUser(userid) == false)
             return false;
 
         // Generate a token
@@ -268,7 +291,7 @@ export default class dbAPI {
         }
 
         // Otherwise return the token
-        return success;
+        return token;
     }
 
 }

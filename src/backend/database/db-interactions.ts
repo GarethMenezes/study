@@ -16,11 +16,11 @@ export default class Interactions {
         // Sanitise bindings
         // binding characters should be only specific characters...
         for (let i = 0; i < bindings.length; i++) {
-            let binding = bindings[i];
-            // Usernames can contain letters, and a few others
+            let binding: string = (bindings[i]).toString();
+            // bindings can contain letters, and a few others
             const allowedChars = new Set("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_!?:;@.,+/=");
 
-            // Ensure username only contains these
+            // Ensure bindings only contains these
             for (let i = 0; i < binding.length; i++) {
                 if (!allowedChars.has(binding[i])) {
                     return false;
@@ -36,10 +36,9 @@ export default class Interactions {
         // Make preparations and apply bindings
         let SQLStatement = this.db.prepare(statement);
 
-        console.log(SQLStatement, statement, bindings)
         try {
             // Bind each of the bindings
-            SQLStatement = SQLStatement.bind(bindings);
+            SQLStatement = SQLStatement.bind.apply(SQLStatement, bindings);
 
         // Catch any errors that occur
         } catch (e) {
@@ -57,10 +56,8 @@ export default class Interactions {
 
         const datetime: number = (Math.floor(Date.now() / 1000));
         const bindings: any[] = [email, password, username, state, "false", language, datetime, datetime];
-        console.log(bindings);
-        const s = await this.SQLPrepare('INSERT INTO "users" ("email","password","username","status","verification-state","language","last-reset-datetime","last-activity-datetime") VALUES (?,?,?,?,?,?,?,?)', bindings);
 
-        console.log("ASDASDASDASD ", s)
+        const s = await this.SQLPrepare('INSERT INTO "users" ("email","password","username","status","verification-state","language","last-reset-datetime","last-activity-datetime") VALUES (?,?,?,?,?,?,?,?)', bindings);
 
         if (s == false) {
             return false;
@@ -113,6 +110,17 @@ export default class Interactions {
     }
 
 
+    // Function to access the users table
+    async getUsersTable(env: any) {
+        // Are we on the production environment or database?
+        if (env.ENVIRONMENT_MODE == "production") {
+            return false; // NOT ALLOWED TO READ THIS TABLE IN PRODUCTION
+        }
+        // Otherwise, get the data
+        const results = await this.db.prepare('SELECT * FROM "users"').all();
+        return results.results;
+    }
+
     // Function to insert a new token into the database
     async newToken(userid: string, token: string, type: string, expiration: number) { 
         const s = await this.SQLPrepare('INSERT INTO "tokens" ("user-id","token","expiration-datetime","type") VALUES (?,?,?,?)', [userid, token, expiration as unknown as string, type])
@@ -126,7 +134,6 @@ export default class Interactions {
 
     // Function to get a list of users matching a sort critiera
     async getUser(email?: string, username?: string, userid?: string) {
-    
         // Create the SQL Query based on the inputs
         let searchCriteria: string = "";
         let bindings: string[] = [];
@@ -141,13 +148,7 @@ export default class Interactions {
         // If there isnt a user-id a more complex search may be needed
         else {
 
-            if (typeof email != "undefined" && typeof username != "undefined") {
-                searchCriteria = 'WHERE "email" = ? AND "username" = ?';
-                bindings.push(email);
-                bindings.push(username);
-            }
-
-            else if (typeof email != "undefined") {
+            if (typeof email != "undefined") {
                 searchCriteria = 'WHERE "email" = ?';
                 bindings.push(email);
             }
@@ -167,8 +168,14 @@ export default class Interactions {
             return false;
         }
 
+        // Run the query
+        const results = await s.all();
+        if (typeof results == "undefined") {
+            return undefined;
+        }
+
         // Return its result
-        return (await s.all()).results[0];
+        return results.results[0];
     }
 
 
