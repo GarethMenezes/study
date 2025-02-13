@@ -195,6 +195,7 @@ export default class dbAPI {
         // User does not already exist!
 
         // Validate the email
+        // Oliver -- 13.02.2025 - do these need to be awaited? (!(await this.validateEmail(email)))
         if (!this.validateEmail(email)) {
             return "INVALID-EMAIL";
         }
