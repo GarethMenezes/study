@@ -4,14 +4,14 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>iBaguette Study - Revolutionize Your Revision</title>
+        <title>iBaguette Study</title>
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
         />
         <meta
           name="description"
-          content="iBaguette Study offers real exam examples, past papers, search by grade/mark, and detailed exam script analysis to boost your revision strategy."
+          content="iBaguette Study is a brand-new, blazing-fast service for students and teachers. We offer a range of unique features such as searching real scripts by grade/mark, exemplar NEAs and presentations, tips from Oxbridge applicants and more to boost your revision & grades."
         />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -46,7 +46,7 @@ export default function Home() {
                   Real Exam Examples
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Access genuine exam questions and past papers from diverse exam boards.
+                  See how the best students nail exams with their scripts and exemplar NEAs.
                 </p>
               </div>
               <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
@@ -54,7 +54,7 @@ export default function Home() {
                   Grade-Based Search
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Filter revision materials by grade and mark to target your study focus.
+                  Filter and compare revision materials by the grade they achieved to find the best strategy.
                 </p>
               </div>
               <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
@@ -62,7 +62,23 @@ export default function Home() {
                   Exam Script Analysis
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  Learn from detailed marked exam scripts and understand marking schemes.
+                  See how examiners mark scripts and learn how to improve your answers.
+                </p>
+              </div>
+              <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Free and Open Source
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  No paywalls, no tracking, no spending 30 minutes to find the right resource.
+                </p>
+              </div>
+              <div className="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg shadow hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  Statements, Tips & More
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300">
+                  See how Russell Group and Oxbridge applicants aced their personal statements, presentations, interviews and exams.
                 </p>
               </div>
             </div>
@@ -73,13 +89,13 @@ export default function Home() {
         <section className="py-20 bg-gray-50 dark:bg-gray-900">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-              Ready to Revolutionize Your Revision?
+              Learn Smarter, Not Harder
             </h2>
             <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-              Join iBaguette Study today and unlock a comprehensive suite of revision tools.
+              Open up the Resource Library and see the featured resources, or search more specifcally for what you need.
             </p>
             <a
-              href="https://github.com/"
+              href="/library"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-full px-8 py-4 transition-colors duration-300"
