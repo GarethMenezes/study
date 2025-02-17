@@ -1,5 +1,5 @@
 # study
-Source file tree for study.ibaguette.com.
+Source file tree for study.iBaguette.com.
 
 # Frontend
 The frontend will be built with Next.js, a React framework - for the most part. The site will be static, with dynamic components (account sign-in, resource upload, search) handled by Cloudflare Workers.
